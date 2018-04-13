@@ -17,3 +17,4 @@ def parse_command_sequences(infile):
             commands = []
         elif line == "**EOF**":
             sessions.append(Session(commands))
+        
