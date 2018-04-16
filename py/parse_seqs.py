@@ -1,3 +1,8 @@
+import sys
+from antlr4 import *
+from grammars.uciPurdueUnixLexer import uciPurdueUnixLexer
+from grammars.uciPurdueUnixParser import uciPurdueUnixParser
+
 class Session:
     def __init__(self, commands):
         self.commands = commands
@@ -17,4 +22,15 @@ def parse_command_sequences(infile):
             commands = []
         elif line == "**EOF**":
             sessions.append(Session(commands))
+    return sessions
+
+def main(argv):
+    input = FileStream(argv[1])
+    lexer = uciPurdueUnixLexer(input)
+    stream = CommonTokenStream(lexer)
+    parser = uciPurdueUnixParser(stream)
+    tree = parser.startRule()
+ 
+if __name__ == '__main__':
+    main(sys.argv)
         
