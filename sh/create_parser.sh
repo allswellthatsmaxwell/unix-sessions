@@ -1,0 +1,1 @@
+antlr4 -Dlanguage=Python3 -o ./py $1

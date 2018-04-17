@@ -1,0 +1,1 @@
+python3.5 py/parse_seqs.py data/UNIX_user_data/USER0
