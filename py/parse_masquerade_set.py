@@ -74,8 +74,8 @@ def read_and_setup_data(seqs_dir, inds_fpath):
     1 means they are contaminated."
     Returns: a list of UserHistory objects, one per file in seqs_dir
     """
-    seqs = read_sequences(MASQ_DIR)
-    inds = np.loadtxt(MASQ_IND_FPATH)
+    seqs = read_sequences(seqs_dir)
+    inds = np.loadtxt(inds_fpath)
     for i, column in enumerate(inds.T):
         seqs[i].set_contaminated_block_inds(column)
     return seqs
