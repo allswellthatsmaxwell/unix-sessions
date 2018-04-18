@@ -10,14 +10,26 @@ class UserHistory:
         self.user = int(fname[4:])
         self.commands = commands
 
+    def set_contaminated_block_inds(self, contam_array):
+        """
+        sets for each block whether it is contaminated by a masquerader.
+        contam_array: a 100 x 0 array
+        """
+        assert(contam_array.shape == (UserHistory.BLOCK_LEN,))
+        self.contams = [{1:True, 0:False}[x] for x in contam_array]
+
     def get_training_set(self):
         """ returns the training block sequence of commands """
         return self.commands[:UserHistory.TRAIN_LEN]    
 
-    def get_nth_masq_block(self, n):
+    def get_nth_block(self, n):
         """ returns the nth potentially-masquerader (not training) block """
         return self.commands[self.__blockwin(n):self.__blockwin(n + 1)]
 
+    def nth_contaminated(self, n):
+        """ returns whether the nth block is contaminated by a masquerader."""
+        return self.contams[n]
+    
     @staticmethod
     def __blockwin(k):
         """ 
@@ -48,12 +60,27 @@ def read_sequences(userfiles_dir):
     user_histories.sort()
     return user_histories
 
-def read_indicator_matrix(infile):
-    mat = np.loadtxt(infile)
-    return mat
+def read_and_setup_data(seqs_dir, inds_fpath):
+    """     
+    Arguments: 
+    seqs_dir: a directory of user files; see read_sequences docstring.
+    inds_fpath: the path to the block contamination matrix file. From Schonlau:
+    "This file contains 100 rows and 50 columns. Each column corresponds 
+    to one of the 50 users. Each row corresponds to a set of 100 commands, 
+    starting with command 5001 and ending with command 15000. 
+    The entries in the files are 0 or 1. 0 means that the corresponding 
+    100 commands are not contaminated by a masquerader. 
+    1 means they are contaminated."
+    Returns: a list of UserHistory objects, one per file in seqs_dir
+    """
+    seqs = read_sequences(MASQ_DIR)
+    inds = np.loadtxt(MASQ_IND_FPATH)
+    for i, column in enumerate(inds.T):
+        seqs[i].set_contaminated_block_inds(column)
+    return seqs
 
 os.chdir("/home/mson/home/unixseq")
 MASQ_DIR = "data/masquerade_users"
-MASQ_IND_FPATH = "data/masquerade_summary.txt"
-seqs = read_sequences(MASQ_DIR)
-inds = read_indicator_matrix(MASQ_IND_FPATH)
+MASQ_INDS_FPATH = "data/masquerade_summary.txt"
+
+seqs = read_and_setup_data(MASQ_DIR, MASQ_INDS_FPATH)
