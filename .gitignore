@@ -1,0 +1,12 @@
+*.*
+data/
+!*.py
+!*.txt
+!*.g4
+!*.sh
+!sh/
+!README
+!README.md
+!.gitignore
+hmmlearn/
+seqlearn/

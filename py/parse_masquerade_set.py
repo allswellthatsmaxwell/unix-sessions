@@ -1,5 +1,6 @@
-import os, re
 import numpy as np
+import os, re
+import seqlearn, hmmlearn
 
 class UserHistory:
     TRAIN_LEN = 5000
