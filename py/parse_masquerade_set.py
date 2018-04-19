@@ -44,7 +44,7 @@ class UserHistory:
     def __lt__(self, other):
         return self.user <= other.user
     
-def read_sequences(userfiles_dir):
+def read_histories(userfiles_dir):
     """
     collects user names and command sequences. Assumes userfiles_dir has
     one file per user, and that each file has one line per command.
@@ -64,7 +64,7 @@ def read_sequences(userfiles_dir):
 def read_and_setup_data(seqs_dir, inds_fpath):
     """     
     Arguments: 
-    seqs_dir: a directory of user files; see read_sequences docstring.
+    seqs_dir: a directory of user files; see read_histories docstring.
     inds_fpath: the path to the block contamination matrix file. From Schonlau:
     "This file contains 100 rows and 50 columns. Each column corresponds 
     to one of the 50 users. Each row corresponds to a set of 100 commands, 
@@ -74,14 +74,42 @@ def read_and_setup_data(seqs_dir, inds_fpath):
     1 means they are contaminated."
     Returns: a list of UserHistory objects, one per file in seqs_dir
     """
-    seqs = read_sequences(seqs_dir)
+    histories = read_histories(seqs_dir)
     inds = np.loadtxt(inds_fpath)
     for i, column in enumerate(inds.T):
-        seqs[i].set_contaminated_block_inds(column)
-    return seqs
+        histories[i].set_contaminated_block_inds(column)
+    return histories
+
+def divide_rows_by_row_sums(mat):
+    return (mat.T / mat.sum(axis=1)).T
+
+def build_transition_matrix(seq):
+    """ 
+    Get the transitions matrix (in the Markov context) 
+    for the command sequence seq. The (i, j)th element is the observed probability
+    that word i was followed by word j. Also returns names in order corresponding
+    to row and column indices in the matrix.
+    Arguments: seq: a list
+    Returns: a square matrix and the names (row and column names are the same)
+    of that matrix
+    """
+    words = list(set(seq))
+    words.sort()
+    words_idx = {}
+    for i, word in enumerate(words):
+        words_idx[word] = i
+    transitions_mat = np.zeros((len(words), len(words)))
+    for v, w in zip(seq[:-1], seq[1:]):
+        ## Each time word v is followed by word w, increment M[v, w].
+        transitions_mat[words_idx[v], words_idx[w]] += 1
+    transitions_mat = divide_rows_by_row_sums(transitions_mat)                                             
+    return transitions_mat, words
+    
 
 os.chdir("/home/mson/home/unixseq")
 MASQ_DIR = "data/masquerade_users"
 MASQ_INDS_FPATH = "data/masquerade_summary.txt"
 
-seqs = read_and_setup_data(MASQ_DIR, MASQ_INDS_FPATH)
+histories = read_and_setup_data(MASQ_DIR, MASQ_INDS_FPATH)
+transition_mats = [build_transition_matrix(history.get_training_set())
+                   for history in histories]
