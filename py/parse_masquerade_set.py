@@ -102,16 +102,23 @@ def build_transition_matrix(seq):
         ## Each time word v is followed by word w, increment M[v, w].
         transitions_mat[words_idx[v], words_idx[w]] += 1
     transitions_mat = divide_rows_by_row_sums(transitions_mat)                                             
-    return transitions_mat, words
+    return TransMat(transitions_mat, words)
 
 class MaxInMat:
-    def __init__(self, val, i, j):
-        self.val, self.i, self.j = val, i, j
+    def __init__(self, val, i, j, i_name, j_name):
+        self.val, self.i, self.j, self.i_name, self.j_name = val, i, j, i_name, j_name
 
     def __repr__(self):
-        return f"[{self.i}, {self.j}] = {self.val}"
+        return f"[{self.i_name}, {self.j_name}] = {self.val}"
 
-def get_n_highest_elements(mat, n):
+class TransMat:
+    def __init__(self, mat, names):
+        assert(mat.shape[0] == mat.shape[1])
+        assert(mat.shape[0] == len(names))
+        self.mat = mat
+        self.names = names
+    
+def get_n_highest_elements(transmat, names, n):
     """
     return the values and indices of the n largest values in mat
     """
@@ -121,11 +128,13 @@ def get_n_highest_elements(mat, n):
         largest_val = 0
         largest_i = -1
         largest_j = -1
-        for j, column in enumerate(mat):
+        for j, column in enumerate(transmat.mat):
             for i, element in enumerate(column):
                 if element > largest_val and (i, j) not in already_added:
                     largest_val, largest_i, largest_j = element, i, j
-        maxs.append(MaxInMat(largest_val, largest_i, largest_j))
+        maxs.append(MaxInMat(largest_val, largest_i, largest_j,
+                             transmat.names[largest_i],
+                             transmat.names[largest_j]))
         already_added.append((largest_i, largest_j))
     return maxs
 
@@ -138,4 +147,6 @@ transition_mats = [build_transition_matrix(history.get_training_set())
                    for history in histories]
 
 
-maxs0 = get_n_highest_elements(transition_mats[0][0], 3)
+maxs = get_n_highest_elements(transition_mats[2],
+                              transition_mats[2],
+                              3)
