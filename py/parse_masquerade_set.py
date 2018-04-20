@@ -1,6 +1,5 @@
 import numpy as np
 import os, re
-import seqlearn, hmmlearn
 
 class UserHistory:
     TRAIN_LEN = 5000
@@ -104,7 +103,31 @@ def build_transition_matrix(seq):
         transitions_mat[words_idx[v], words_idx[w]] += 1
     transitions_mat = divide_rows_by_row_sums(transitions_mat)                                             
     return transitions_mat, words
-    
+
+class MaxInMat:
+    def __init__(self, val, i, j):
+        self.val, self.i, self.j = val, i, j
+
+    def __repr__(self):
+        return f"[{self.i}, {self.j}] = {self.val}"
+
+def get_n_highest_elements(mat, n):
+    """
+    return the values and indices of the n largest values in mat
+    """
+    maxs = []
+    already_added = []
+    for k in range(n):
+        largest_val = 0
+        largest_i = -1
+        largest_j = -1
+        for j, column in enumerate(mat):
+            for i, element in enumerate(column):
+                if element > largest_val and (i, j) not in already_added:
+                    largest_val, largest_i, largest_j = element, i, j
+        maxs.append(MaxInMat(largest_val, largest_i, largest_j))
+        already_added.append((largest_i, largest_j))
+    return maxs
 
 os.chdir("/home/mson/home/unixseq")
 MASQ_DIR = "data/masquerade_users"
@@ -113,3 +136,6 @@ MASQ_INDS_FPATH = "data/masquerade_summary.txt"
 histories = read_and_setup_data(MASQ_DIR, MASQ_INDS_FPATH)
 transition_mats = [build_transition_matrix(history.get_training_set())
                    for history in histories]
+
+
+maxs0 = get_n_highest_elements(transition_mats[0][0], 3)
