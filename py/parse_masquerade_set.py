@@ -147,6 +147,14 @@ def get_n_highest_elements(transmat, names, n):
         already_added.append((largest_i, largest_j))
     return maxs
 
+def add_transition_matrices(matlist):
+    counts = {}
+    for transmat in matlist:
+        for column, name in zip(transmat.mat, transmat.names):
+            for row, name in zip(column, transmat.names):
+    pass
+            
+
 os.chdir("/home/mson/home/unixseq")
 MASQ_DIR = "data/masquerade_users"
 MASQ_INDS_FPATH = "data/masquerade_summary.txt"
