@@ -97,12 +97,13 @@ def build_transition_matrix(seq):
     words_idx = {}
     for i, word in enumerate(words):
         words_idx[word] = i
-    transitions_mat = np.zeros((len(words), len(words)))
+    mat = np.zeros((len(words), len(words)))
     for v, w in zip(seq[:-1], seq[1:]):
         ## Each time word v is followed by word w, increment M[v, w].
-        transitions_mat[words_idx[v], words_idx[w]] += 1
-    transitions_mat = divide_rows_by_row_sums(transitions_mat)                                             
-    return TransMat(transitions_mat, words)
+        mat[words_idx[v], words_idx[w]] += 1
+    counts = mat.copy()
+    mat = divide_rows_by_row_sums(mat)
+    return TransMat(mat, counts, words)
 
 class MaxInMat:
     def __init__(self, val, i, j, i_name, j_name):
@@ -112,11 +113,19 @@ class MaxInMat:
         return f"[{self.i_name}, {self.j_name}] = {self.val}"
 
 class TransMat:
-    def __init__(self, mat, names):
+    def __init__(self, mat, counts, names):
         assert(mat.shape[0] == mat.shape[1])
+        assert(counts.shape[0] == mat.shape[1])
         assert(mat.shape[0] == len(names))
-        self.mat = mat
-        self.names = names
+        self.mat, self.names, self.counts = mat.copy(), names.copy(), counts.copy()
+
+    def command_incidence(self):
+        """ return a map of the number of times each command was entered """
+        incidences = np.sum(self.counts, axis = 1)
+        incidence_by_name = {}
+        for name, count in zip(self.names, incidences):
+            incidence_by_name[name] = count
+        return incidence_by_name    
     
 def get_n_highest_elements(transmat, names, n):
     """
