@@ -150,9 +150,11 @@ def get_n_highest_elements(transmat, names, n):
 def add_transition_matrices(matlist):
     counts = {}
     for transmat in matlist:
-        for column, name in zip(transmat.mat, transmat.names):
-            for row, name in zip(column, transmat.names):
-    pass
+        for column, colname in zip(transmat.mat, transmat.names):
+            for row, rowname in zip(column, transmat.names):
+                name = f"{colname} => {rowname}"
+                counts[name] = counts.get(name, 0) + 1
+    return counts
             
 
 os.chdir("/home/mson/home/unixseq")
